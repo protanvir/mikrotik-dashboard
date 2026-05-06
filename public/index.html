@@ -530,6 +530,294 @@
     .stat-row { grid-template-columns: repeat(2, 1fr); }
     header { flex-direction: column; gap: 10px; }
   }
+
+  /* ── Router tabs ─────────────────────────────────────── */
+  #router-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 24px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .router-tab {
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+
+  .router-tab:hover {
+    background: var(--bg3);
+    color: var(--text);
+  }
+
+  .router-tab.active {
+    background: var(--green-dim);
+    color: var(--green);
+    border-color: var(--green);
+  }
+
+  .router-tab .tab-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    flex-shrink: 0;
+  }
+
+  .router-tab.active .tab-dot {
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  .router-tab .tab-status {
+    font-size: 9px;
+    color: var(--text-faint);
+  }
+
+  #settings-btn {
+    margin-left: auto;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: var(--text-faint);
+    font-size: 16px;
+    transition: all 0.2s;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    line-height: 1;
+  }
+
+  #settings-btn:hover {
+    color: var(--text);
+    border-color: var(--border2);
+    background: var(--bg3);
+  }
+
+  /* ── Settings modal ──────────────────────────────────── */
+  #settings-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+  }
+
+  #settings-overlay.open {
+    display: block;
+  }
+
+  .settings-panel {
+    max-width: 640px;
+    margin: 40px auto;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    position: relative;
+  }
+
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .settings-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .settings-close {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color 0.2s;
+  }
+
+  .settings-close:hover { color: var(--text); background: var(--bg3); }
+
+  .router-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .router-list-item:hover { border-color: var(--border2); }
+
+  .router-li-info { flex: 1; min-width: 0; }
+
+  .router-li-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .router-li-location {
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  .router-li-ip {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .router-li-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  .btn {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn:hover { background: var(--bg3); color: var(--text); }
+
+  .btn-primary {
+    background: var(--green-dim);
+    color: var(--green);
+    border-color: var(--green);
+  }
+
+  .btn-primary:hover { background: var(--green); color: var(--bg); }
+
+  .btn-danger {
+    color: var(--red);
+    border-color: var(--red-dim);
+  }
+
+  .btn-danger:hover { background: var(--red-dim); color: var(--red); }
+
+  .btn-add {
+    width: 100%;
+    padding: 10px;
+    border: 1px dashed var(--border2);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 8px;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-add:hover { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+  .router-form {
+    margin-top: 16px;
+    padding: 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .form-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-row.single {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 4px;
+  }
+
+  .form-group input {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus { outline: none; border-color: var(--green); }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .test-result {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    display: none;
+  }
+
+  .test-result.success { background: var(--green-dim); color: var(--green); display: block; }
+  .test-result.error   { background: var(--red-dim);   color: var(--red);   display: block; }
+
+  .empty-settings {
+    padding: 24px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 12px;
+  }
 </style>
 </head>
 <body>
@@ -539,7 +827,7 @@
   <div class="header-left">
     <div class="status-dot" id="status-dot"></div>
     <div>
-      <div class="logo">CCR2116<span>MikroTik Dashboard</span></div>
+      <div class="logo"><span id="hdr-router-name" style="color:var(--green);font-weight:700;font-size:14px;">CCR2116</span><span>MikroTik Dashboard</span></div>
     </div>
   </div>
   <div class="header-meta">
@@ -562,6 +850,9 @@
     <div class="refresh-badge" id="countdown">⟳ 5s</div>
   </div>
 </header>
+
+<!-- ── Router tabs ─────────────────────────────────────── -->
+<div id="router-tabs"></div>
 
 <!-- ── Main ───────────────────────────────────────────── -->
 <main>
@@ -764,6 +1055,67 @@
 
   </div>
 </main>
+
+<!-- ── Settings modal ───────────────────────────────────── -->
+<div id="settings-overlay">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <h2>Router Settings</h2>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <div id="settings-router-list">
+      <div class="empty-settings">Loading...</div>
+    </div>
+
+    <button class="btn-add" onclick="addRouter()">+ Add Router</button>
+
+    <div class="router-form" id="router-form" style="display:none">
+      <div class="form-title" id="form-title">Add Router</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="router-name" placeholder="e.g. Main Office">
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" id="router-location" placeholder="e.g. Data Center A">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>IP Address</label>
+          <input type="text" id="router-ip" placeholder="e.g. 192.168.88.1">
+        </div>
+        <div class="form-group">
+          <label>Port</label>
+          <input type="text" id="router-port" placeholder="443" value="443">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="router-username" placeholder="admin">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="router-password" placeholder="Router password">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="saveRouter()">Save</button>
+        <button class="btn" onclick="testRouterConnection()">Test Connection</button>
+        <button class="btn" onclick="cancelForm()">Cancel</button>
+      </div>
+
+      <div class="test-result" id="test-result"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -1065,15 +1417,277 @@ function renderPptp(sessions) {
   tbody.innerHTML = rows.join('');
 }
 
-// ── Main polling ─────────────────────────────────────────────────────────────
-let countdown = 5;
-let routerIp = '—';
+// ── Multi-router support ─────────────────────────────────────────────────────
+let currentRouterId = null;
+
+function apiUrl(path) {
+  if (!currentRouterId) return path;
+  const sep = path.includes('?') ? '&' : '?';
+  return path + sep + 'routerId=' + encodeURIComponent(currentRouterId);
+}
 
 async function fetchJSON(url) {
-  const res = await fetch(url);
+  const res = await fetch(apiUrl(url));
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+async function fetchGlobalJSON(url, options) {
+  const opts = options || {};
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function renderTabs(routers) {
+  const container = document.getElementById('router-tabs');
+  if (!routers.length) {
+    container.innerHTML = '<div style="padding:6px 0;color:var(--text-faint);font-size:11px;">No routers configured. <a href="#" onclick="openSettings();return false" style="color:var(--green);text-decoration:none;">Add one</a></div>';
+    return;
+  }
+  container.innerHTML = routers.map(r => `
+    <div class="router-tab ${r.id === currentRouterId ? 'active' : ''}" data-id="${r.id}" onclick="switchRouter('${r.id}')">
+      <span class="tab-dot"></span>
+      ${r.name}
+    </div>
+  `).join('') + '<div id="settings-btn" onclick="openSettings()" title="Manage routers">⚙</div>';
+}
+
+function switchRouter(id) {
+  if (id === currentRouterId) return;
+  currentRouterId = id;
+  localStorage.setItem('selectedRouterId', id);
+  document.querySelectorAll('.router-tab').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
+  });
+
+  // Update header with router name
+  fetchJSON('/api/config').then(cfg => {
+    routerIp = cfg.routerIp;
+    document.getElementById('hdr-ip').textContent = routerIp;
+    document.getElementById('hdr-router-name').textContent = cfg.routerName || 'Router';
+  }).catch(() => {});
+
+  tick();
+}
+
+async function loadRouters() {
+  try {
+    const routers = await fetchGlobalJSON('/api/routers');
+    const prevId = localStorage.getItem('selectedRouterId');
+    if (prevId && routers.find(r => r.id === prevId)) {
+      currentRouterId = prevId;
+    } else if (routers.length > 0) {
+      currentRouterId = routers[0].id;
+      localStorage.setItem('selectedRouterId', currentRouterId);
+    } else {
+      currentRouterId = null;
+    }
+    renderTabs(routers);
+    return routers;
+  } catch (e) {
+    document.getElementById('router-tabs').innerHTML =
+      '<div style="padding:6px 0;color:var(--red);font-size:11px;">Failed to load router config</div>';
+    return [];
+  }
+}
+
+// ── Settings modal ───────────────────────────────────────────────────────────
+let editingRouterId = null;
+
+function openSettings() {
+  document.getElementById('settings-overlay').classList.add('open');
+  renderSettingsList();
+  document.getElementById('router-form').style.display = 'none';
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+  editingRouterId = null;
+}
+
+async function renderSettingsList() {
+  try {
+    const routers = await fetchGlobalJSON('/api/routers');
+    const list = document.getElementById('settings-router-list');
+    if (!routers.length) {
+      list.innerHTML = '<div class="empty-settings">No routers configured yet. Click "+ Add Router" to begin.</div>';
+      return;
+    }
+    list.innerHTML = routers.map(r => {
+      const isActive = r.id === currentRouterId;
+      return `
+      <div class="router-list-item">
+        <div class="router-li-info">
+          <div class="router-li-name">${r.name}${isActive ? ' <span style="color:var(--green);font-size:9px;font-weight:400;">(active)</span>' : ''}</div>
+          ${r.location ? '<div class="router-li-location">' + r.location + '</div>' : ''}
+          <div class="router-li-ip">${r.ip}:${r.port}</div>
+        </div>
+        <div class="router-li-actions">
+          <button class="btn" onclick="editRouter('${r.id}')">Edit</button>
+          <button class="btn btn-danger" onclick="deleteRouter('${r.id}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('settings-router-list').innerHTML =
+      '<div class="empty-settings" style="color:var(--red)">Error loading routers</div>';
+  }
+}
+
+function addRouter() {
+  editingRouterId = null;
+  document.getElementById('form-title').textContent = 'Add Router';
+  document.getElementById('router-name').value = '';
+  document.getElementById('router-location').value = '';
+  document.getElementById('router-ip').value = '';
+  document.getElementById('router-port').value = '443';
+  document.getElementById('router-username').value = '';
+  document.getElementById('router-password').value = '';
+  document.getElementById('router-password').placeholder = 'Router password';
+  document.getElementById('test-result').className = 'test-result';
+  document.getElementById('test-result').style.display = 'none';
+  document.getElementById('router-form').style.display = 'block';
+}
+
+function editRouter(id) {
+  editingRouterId = id;
+  document.getElementById('form-title').textContent = 'Edit Router';
+  document.getElementById('router-password').placeholder = 'Leave blank to keep current';
+
+  fetchGlobalJSON('/api/routers/' + id).then(r => {
+    document.getElementById('router-name').value = r.name || '';
+    document.getElementById('router-location').value = r.location || '';
+    document.getElementById('router-ip').value = r.ip || '';
+    document.getElementById('router-port').value = r.port || '443';
+    document.getElementById('router-username').value = r.username || '';
+    document.getElementById('router-password').value = '';
+    document.getElementById('test-result').className = 'test-result';
+    document.getElementById('test-result').style.display = 'none';
+    document.getElementById('router-form').style.display = 'block';
+  }).catch(e => {
+    alert('Failed to load router: ' + e.message);
+  });
+}
+
+function cancelForm() {
+  document.getElementById('router-form').style.display = 'none';
+  editingRouterId = null;
+}
+
+async function saveRouter() {
+  const name = document.getElementById('router-name').value.trim();
+  const location = document.getElementById('router-location').value.trim();
+  const ip = document.getElementById('router-ip').value.trim();
+  const port = document.getElementById('router-port').value.trim() || '443';
+  const username = document.getElementById('router-username').value.trim();
+  const password = document.getElementById('router-password').value;
+
+  if (!name) { alert('Name is required'); return; }
+  if (!ip) { alert('IP Address is required'); return; }
+  if (!username) { alert('Username is required'); return; }
+  if (!editingRouterId && !password) { alert('Password is required for new routers'); return; }
+
+  const body = { name, location, ip, port, username };
+  if (password) body.password = password;
+
+  try {
+    let newRouterId = null;
+    if (editingRouterId) {
+      await fetchGlobalJSON('/api/routers/' + editingRouterId, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+    } else {
+      const created = await fetchGlobalJSON('/api/routers', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      newRouterId = created.id;
+    }
+    document.getElementById('router-form').style.display = 'none';
+    editingRouterId = null;
+    await renderSettingsList();
+    // Refresh tabs and switch to new router if created
+    if (newRouterId) {
+      switchRouter(newRouterId);
+    } else {
+      await loadRouters();
+    }
+  } catch (e) {
+    alert('Failed to save router: ' + e.message);
+  }
+}
+
+async function deleteRouter(id) {
+  if (!confirm('Delete this router?')) return;
+  try {
+    await fetchGlobalJSON('/api/routers/' + id, { method: 'DELETE' });
+    await renderSettingsList();
+    const routers = await loadRouters();
+    if (currentRouterId === id) {
+      if (routers.length > 0) {
+        switchRouter(routers[0].id);
+      } else {
+        currentRouterId = null;
+        document.getElementById('hdr-ip').textContent = '—';
+      }
+    }
+  } catch (e) {
+    alert('Failed to delete router: ' + e.message);
+  }
+}
+
+async function testRouterConnection() {
+  const ip = document.getElementById('router-ip').value.trim();
+  const port = document.getElementById('router-port').value.trim() || '443';
+  const username = document.getElementById('router-username').value.trim();
+  const password = document.getElementById('router-password').value;
+  const editing = editingRouterId;
+
+  if (!ip || !username || (!password && !editing)) {
+    alert('Fill in IP, Username, and Password first');
+    return;
+  }
+
+  const resultEl = document.getElementById('test-result');
+  resultEl.className = 'test-result';
+  resultEl.style.display = 'block';
+  resultEl.textContent = 'Testing connection...';
+
+  try {
+    let res;
+    if (password) {
+      // Test with provided credentials
+      res = await fetch('/api/routers/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip, port, username, password }),
+      });
+    } else {
+      // Test with saved credentials (editing mode, no password change)
+      res = await fetch('/api/routers/' + editing + '/test');
+    }
+    const result = await res.json();
+    if (result.success) {
+      resultEl.className = 'test-result success';
+      resultEl.textContent = '✓ Connected! RouterOS ' + (result.version || '') + ' — Uptime: ' + (result.uptime || '');
+    } else {
+      resultEl.className = 'test-result error';
+      resultEl.textContent = '✕ ' + (result.error || 'Connection failed');
+    }
+  } catch (e) {
+    resultEl.className = 'test-result error';
+    resultEl.textContent = '✕ ' + e.message;
+  }
+}
+
+// ── Main polling ─────────────────────────────────────────────────────────────
+let countdown = 5;
+let routerIp = '—';
 
 function setOnline(online) {
   const dot = document.getElementById('status-dot');
@@ -1249,10 +1863,19 @@ setInterval(() => {
 // Init
 (async () => {
   try {
-    const cfg = await fetchJSON('/api/config');
-    routerIp = cfg.routerIp;
-    document.getElementById('hdr-ip').textContent = routerIp;
-  } catch (e) {}
+    // Load routers and set active router
+    await loadRouters();
+
+    // Load config for the selected router
+    if (currentRouterId) {
+      const cfg = await fetchJSON('/api/config');
+      routerIp = cfg.routerIp;
+      document.getElementById('hdr-ip').textContent = routerIp;
+      document.getElementById('hdr-router-name').textContent = cfg.routerName || 'Router';
+    }
+  } catch (e) {
+    console.warn('Init error:', e.message);
+  }
 
   // Force BGP + connections + PPTP to load on first tick
   connTick = 1;

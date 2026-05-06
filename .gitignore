@@ -1,5 +1,6 @@
 node_modules/
 .env
+config/routers.json
 console-dump.txt
 sensor.txt
 mikrotik-dashboard.zip
