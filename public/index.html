@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MikroTik CCR2116 Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:        #05080a;
+    --bg2:       #0b1015;
+    --bg3:       #111820;
+    --border:    #1c2d3d;
+    --border2:   #243447;
+    --green:     #00e5a0;
+    --green-dim: #00e5a020;
+    --amber:     #f0a500;
+    --amber-dim: #f0a50020;
+    --red:       #ff4455;
+    --red-dim:   #ff445520;
+    --blue:      #4a9eff;
+    --blue-dim:  #4a9eff18;
+    --text:      #ccd6e0;
+    --text-dim:  #5a7a90;
+    --text-faint:#2d4455;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--green);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span {
+    color: var(--text-dim);
+    font-weight: 400;
+    font-size: 11px;
+    margin-left: 8px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red);
+    flex-shrink: 0;
+  }
+  .status-dot.online {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .meta-item {
+    text-align: right;
+  }
+
+  .meta-label {
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .meta-value.highlight { color: var(--green); }
+
+  .refresh-badge {
+    font-size: 10px;
+    color: var(--text-faint);
+    border: 1px solid var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── Main layout ────────────────────────────────────── */
+  main {
+    padding: 20px 24px;
+    display: grid;
+    gap: 16px;
+  }
+
+  /* ── Section labels ─────────────────────────────────── */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Cards ──────────────────────────────────────────── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  }
+
+  .card-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 6px;
+  }
+
+  .card-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--green);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .card-value.warn  { color: var(--amber); }
+  .card-value.alert { color: var(--red); }
+  .card-value.blue  { color: var(--blue); }
+
+  .card-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* Bar meter */
+  .bar-track {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 0.5s ease;
+  }
+
+  .bar-fill.warn  { background: var(--amber); }
+  .bar-fill.alert { background: var(--red); }
+
+  /* ── Stat row ───────────────────────────────────────── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+  }
+
+  /* ── Mini sparkline card ────────────────────────────── */
+  .spark-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    position: relative;
+  }
+
+  .spark-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .spark-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--green);
+    margin: 2px 0 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .spark-value.warn  { color: var(--amber); }
+  .spark-value.alert { color: var(--red); }
+
+  .spark-canvas-wrap {
+    height: 36px;
+  }
+
+  /* ── Interface traffic grid ─────────────────────────── */
+  .iface-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+  }
+
+  .iface-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+
+  .iface-card.up {
+    border-left: 3px solid var(--green);
+  }
+
+  .iface-card.down {
+    border-left: 3px solid var(--border);
+    opacity: 0.5;
+  }
+
+  .iface-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .iface-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .iface-badge.up   { background: var(--green-dim); color: var(--green); }
+  .iface-badge.down { background: var(--red-dim); color: var(--red); }
+
+  .iface-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .iface-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .iface-errors {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 9px;
+    color: var(--text-faint);
+    display: flex;
+    gap: 14px;
+    letter-spacing: 0.5px;
+  }
+
+  .iface-errors .error-count { color: var(--amber); }
+  .iface-errors .error-count.warn { color: var(--red); }
+
+  .traffic-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .traffic-dir {
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    width: 22px;
+  }
+
+  .traffic-bar-wrap {
+    flex: 1;
+    height: 3px;
+    background: var(--bg3);
+    border-radius: 2px;
+    margin: 0 10px;
+  }
+
+  .traffic-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    min-width: 2px;
+  }
+
+  .rx .traffic-bar { background: var(--green); }
+  .tx .traffic-bar { background: var(--blue); }
+
+  .traffic-val {
+    font-size: 11px;
+    color: var(--text);
+    text-align: right;
+    min-width: 72px;
+  }
+
+  /* ── Bottom split ───────────────────────────────────── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr 0.8fr;
+    gap: 16px;
+  }
+
+  /* ── Table ──────────────────────────────────────────── */
+  .table-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-title {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .table-count {
+    font-size: 10px;
+    color: var(--text-faint);
+    background: var(--bg3);
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .scroll-body {
+    max-height: 260px;
+    overflow-y: auto;
+  }
+
+  .scroll-body::-webkit-scrollbar { width: 4px; }
+  .scroll-body::-webkit-scrollbar-track { background: var(--bg); }
+  .scroll-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+
+  th {
+    padding: 8px 16px;
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    font-weight: 400;
+  }
+
+  td {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+
+  tr:hover td { background: var(--bg3); }
+
+  .proto-badge {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .proto-tcp  { background: var(--blue-dim);  color: var(--blue); }
+  .proto-udp  { background: var(--green-dim); color: var(--green); }
+  .proto-icmp { background: var(--amber-dim); color: var(--amber); }
+  .proto-other { background: var(--bg3); color: var(--text-faint); }
+
+  .state-badge {
+    display: inline-block;
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .state-established { background: var(--green-dim); color: var(--green); }
+  .state-time-wait   { background: var(--amber-dim); color: var(--amber); }
+  .state-syn-sent    { background: var(--blue-dim);  color: var(--blue); }
+  .state-other       { background: var(--bg3); color: var(--text-faint); }
+
+  /* BGP state */
+  .bgp-established   { color: var(--green); }
+  .bgp-active        { color: var(--amber); }
+  .bgp-idle          { color: var(--red); }
+  .bgp-other         { color: var(--text-faint); }
+
+  /* ── Error / loading states ─────────────────────────── */
+  .empty-state {
+    padding: 30px;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 11px;
+  }
+
+  .error-banner {
+    display: none;
+    padding: 8px 16px;
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+
+  /* ── Ticker / last-update ───────────────────────────── */
+  #last-update {
+    color: var(--text-faint);
+    font-size: 10px;
+  }
+
+  /* ── Responsive ─────────────────────────────────────── */
+  @media (max-width: 1100px) {
+    .bottom-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 900px) {
+    .stat-row { grid-template-columns: repeat(3, 1fr); }
+    .bottom-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    header { flex-direction: column; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<header>
+  <div class="header-left">
+    <div class="status-dot" id="status-dot"></div>
+    <div>
+      <div class="logo">CCR2116<span>MikroTik Dashboard</span></div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="meta-item">
+      <div class="meta-label">Router IP</div>
+      <div class="meta-value highlight" id="hdr-ip">—</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">RouterOS</div>
+      <div class="meta-value" id="hdr-version">—</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Uptime</div>
+      <div class="meta-value" id="hdr-uptime">—</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Updated</div>
+      <div class="meta-value" id="last-update">—</div>
+    </div>
+    <div class="refresh-badge" id="countdown">⟳ 5s</div>
+  </div>
+</header>
+
+<!-- ── Main ───────────────────────────────────────────── -->
+<main>
+
+  <div class="error-banner" id="error-banner"></div>
+
+  <!-- Stat row -->
+  <section>
+    <div class="section-label">System Status</div>
+
+    <!-- Row 1: CPU + RAM sparklines + 4 temperature sensors -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+
+      <div class="spark-card">
+        <div class="spark-label">CPU Load</div>
+        <div class="spark-value" id="cpu-val">—</div>
+        <div class="spark-canvas-wrap"><canvas id="cpu-chart"></canvas></div>
+      </div>
+
+      <div class="spark-card">
+        <div class="spark-label">RAM Used</div>
+        <div class="spark-value" id="ram-val">—</div>
+        <div class="spark-canvas-wrap"><canvas id="ram-chart"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">CPU Temp</div>
+        <div class="card-value" id="temp-cpu">—</div>
+        <div class="bar-track"><div class="bar-fill" id="bar-cpu" style="width:0%"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">SFP Temp</div>
+        <div class="card-value" id="temp-sfp">—</div>
+        <div class="bar-track"><div class="bar-fill" id="bar-sfp" style="width:0%"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Switch Temp</div>
+        <div class="card-value" id="temp-switch">—</div>
+        <div class="bar-track"><div class="bar-fill" id="bar-switch" style="width:0%"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Board Temp</div>
+        <div class="card-value" id="temp-board">—</div>
+        <div class="bar-track"><div class="bar-fill" id="bar-board" style="width:0%"></div></div>
+      </div>
+
+    </div>
+
+    <!-- Row 2: 4 fans + 2 PSU states -->
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
+
+      <div class="card">
+        <div class="card-label">Fan 1</div>
+        <div class="card-value blue" id="fan1-val">—</div>
+        <div class="card-sub">RPM</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Fan 2</div>
+        <div class="card-value blue" id="fan2-val">—</div>
+        <div class="card-sub">RPM</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Fan 3</div>
+        <div class="card-value blue" id="fan3-val">—</div>
+        <div class="card-sub">RPM</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Fan 4</div>
+        <div class="card-value blue" id="fan4-val">—</div>
+        <div class="card-sub">RPM</div>
+      </div>
+      <div class="card">
+        <div class="card-label">PSU 1</div>
+        <div class="card-value" id="psu1-val" style="font-size:18px">—</div>
+        <div class="card-sub" id="psu1-sub"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">PSU 2</div>
+        <div class="card-value" id="psu2-val" style="font-size:18px">—</div>
+        <div class="card-sub" id="psu2-sub"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Bandwidth Overview -->
+  <section>
+    <div class="section-label">Bandwidth Overview</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+      <div class="card">
+        <div class="card-label">Inbound</div>
+        <div class="card-value" id="total-rx">—</div>
+        <div class="card-sub">bits/sec</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Outbound</div>
+        <div class="card-value" id="total-tx">—</div>
+        <div class="card-sub">bits/sec</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Aggregate</div>
+        <div class="card-value" id="total-agg">—</div>
+        <div class="card-sub">bits/sec</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="spark-card">
+        <div class="spark-label">Inbound Trend</div>
+        <div class="spark-canvas-wrap"><canvas id="bw-rx-chart"></canvas></div>
+      </div>
+      <div class="spark-card">
+        <div class="spark-label">Outbound Trend</div>
+        <div class="spark-canvas-wrap"><canvas id="bw-tx-chart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interface traffic -->
+  <section>
+    <div class="section-label">Interface Traffic — Live</div>
+    <div class="iface-grid" id="iface-grid">
+      <div class="empty-state">Loading interfaces…</div>
+    </div>
+  </section>
+
+  <!-- Connections + BGP -->
+  <div class="bottom-grid">
+
+    <!-- Connections -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">Active Connections</div>
+        <div class="table-count" id="conn-count">0</div>
+      </div>
+      <div class="scroll-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Protocol</th>
+              <th>Source</th>
+              <th>Destination</th>
+              <th>State</th>
+            </tr>
+          </thead>
+          <tbody id="conn-tbody">
+            <tr><td colspan="4" class="empty-state">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BGP -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">BGP Sessions</div>
+        <div class="table-count" id="bgp-count">0</div>
+      </div>
+      <div class="scroll-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Peer</th>
+              <th>Remote AS</th>
+              <th>State</th>
+              <th>Prefixes</th>
+            </tr>
+          </thead>
+          <tbody id="bgp-tbody">
+            <tr><td colspan="4" class="empty-state">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PPTP -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-title">PPTP Active</div>
+        <div class="table-count" id="pptp-count">0</div>
+      </div>
+      <div class="scroll-body">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Caller IP</th>
+              <th>Assigned IP</th>
+              <th>Uptime</th>
+            </tr>
+          </thead>
+          <tbody id="pptp-tbody">
+            <tr><td colspan="4" class="empty-state">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function fmtBits(bps) {
+  if (bps === undefined || bps === null || isNaN(bps)) return '—';
+  bps = Number(bps);
+  if (bps >= 1e9)  return (bps / 1e9).toFixed(2)  + ' Gbps';
+  if (bps >= 1e6)  return (bps / 1e6).toFixed(2)  + ' Mbps';
+  if (bps >= 1e3)  return (bps / 1e3).toFixed(1)  + ' Kbps';
+  return bps + ' bps';
+}
+
+function fmtBytes(bytes) {
+  if (!bytes) return '0 B';
+  bytes = Number(bytes);
+  if (bytes >= 1e9) return (bytes / 1e9).toFixed(1) + ' GB';
+  if (bytes >= 1e6) return (bytes / 1e6).toFixed(1) + ' MB';
+  if (bytes >= 1e3) return (bytes / 1e3).toFixed(1) + ' KB';
+  return bytes + ' B';
+}
+
+function pct(used, total) {
+  if (!total) return 0;
+  return Math.round((used / total) * 100);
+}
+
+function colorClass(pctVal) {
+  if (pctVal >= 90) return 'alert';
+  if (pctVal >= 70) return 'warn';
+  return '';
+}
+
+function barClass(pctVal) {
+  if (pctVal >= 90) return 'alert';
+  if (pctVal >= 70) return 'warn';
+  return '';
+}
+
+function formatUptime(str) {
+  // MikroTik returns e.g. "1w3d2h45m12s" or "2h3m4s"
+  if (!str) return '—';
+  return str.replace(/(\d+)w/, '$1w ').replace(/(\d+)d/, '$1d ').replace(/(\d+)h/, '$1h ').replace(/(\d+)m\d+s/, '$1m').trim();
+}
+
+// ── Sparkline charts ─────────────────────────────────────────────────────────
+const MAX_POINTS = 40;
+
+function makeSparkline(canvasId, color) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: Array(MAX_POINTS).fill(''),
+      datasets: [{
+        data: Array(MAX_POINTS).fill(null),
+        borderColor: color,
+        borderWidth: 1.5,
+        fill: true,
+        backgroundColor: color + '18',
+        tension: 0.4,
+        pointRadius: 0,
+      }]
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { display: false },
+        y: { display: false, min: 0, max: 100 }
+      }
+    }
+  });
+}
+
+const cpuChart = makeSparkline('cpu-chart', '#00e5a0');
+const ramChart = makeSparkline('ram-chart', '#4a9eff');
+
+function makeBwSparkline(canvasId, color) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: Array(BW_POINTS).fill(''),
+      datasets: [{
+        data: Array(BW_POINTS).fill(0),
+        borderColor: color,
+        borderWidth: 1.5,
+        fill: true,
+        backgroundColor: color + '18',
+        tension: 0.4,
+        pointRadius: 0,
+      }]
+    },
+    options: {
+      animation: false,
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { display: false },
+        y: { display: false, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// ── Bandwidth overview ────────────────────────────────────────────────────────
+let bwHistory = { rx: [], tx: [] };
+const BW_POINTS = 30;
+
+const bwRxChart = makeBwSparkline('bw-rx-chart', '#00e5a0');
+const bwTxChart = makeBwSparkline('bw-tx-chart', '#4a9eff');
+
+function pushSparkline(chart, value) {
+  chart.data.datasets[0].data.push(value);
+  if (chart.data.datasets[0].data.length > MAX_POINTS)
+    chart.data.datasets[0].data.shift();
+  chart.update('none');
+}
+
+function renderBandwidth(trafficData) {
+  if (!Array.isArray(trafficData)) return;
+  let totalRx = 0, totalTx = 0;
+  trafficData.forEach(t => {
+    totalRx += Number(t['rx-bits-per-second'] || 0);
+    totalTx += Number(t['tx-bits-per-second'] || 0);
+  });
+
+  document.getElementById('total-rx').textContent = fmtBits(totalRx);
+  document.getElementById('total-tx').textContent = fmtBits(totalTx);
+  document.getElementById('total-agg').textContent = fmtBits(totalRx + totalTx);
+
+  bwHistory.rx.push(totalRx);
+  bwHistory.tx.push(totalTx);
+  if (bwHistory.rx.length > BW_POINTS) bwHistory.rx.shift();
+  if (bwHistory.tx.length > BW_POINTS) bwHistory.tx.shift();
+
+  bwRxChart.data.datasets[0].data = [...bwHistory.rx.map(v => v / 1e9)];
+  bwTxChart.data.datasets[0].data = [...bwHistory.tx.map(v => v / 1e9)];
+  bwRxChart.update('none');
+  bwTxChart.update('none');
+}
+
+// ── Interface cards ──────────────────────────────────────────────────────────
+let knownInterfaces = null;
+let maxTraffic = {}; // track max per interface for relative bar sizing
+
+function renderIfaceCards(ifaceData, trafficData) {
+  const grid = document.getElementById('iface-grid');
+
+  // Build traffic lookup by interface name
+  const trafficMap = {};
+  if (Array.isArray(trafficData)) {
+    trafficData.forEach(t => {
+      if (t.name) trafficMap[t.name] = t;
+    });
+  }
+
+  // Build card HTML for each interface
+  const cards = ifaceData.map(iface => {
+    const isUp = iface['running'] === 'true' || iface['running'] === true;
+    const traffic = trafficMap[iface.name] || {};
+
+    const rxBps = Number(traffic['rx-bits-per-second'] || 0);
+    const txBps = Number(traffic['tx-bits-per-second'] || 0);
+
+    // Track max for relative bar sizing
+    if (!maxTraffic[iface.name]) maxTraffic[iface.name] = { rx: 1, tx: 1 };
+    if (rxBps > maxTraffic[iface.name].rx) maxTraffic[iface.name].rx = rxBps;
+    if (txBps > maxTraffic[iface.name].tx) maxTraffic[iface.name].tx = txBps;
+
+    const rxPct = Math.min(100, (rxBps / maxTraffic[iface.name].rx) * 100);
+    const txPct = Math.min(100, (txBps / maxTraffic[iface.name].tx) * 100);
+
+    const speed = iface['speed'] ? (Number(iface['speed']) >= 1e9 ? (Number(iface['speed'])/1e9).toFixed(0) + ' Gbps' : (Number(iface['speed'])/1e6).toFixed(0) + ' Mbps') : '';
+    const rxErr = Number(iface['rx-error'] || 0);
+    const txErr = Number(iface['tx-error'] || 0);
+    const rxDrop = Number(iface['rx-drop'] || 0);
+    const txDrop = Number(iface['tx-drop'] || 0);
+    const hasErrors = rxErr > 0 || txErr > 0 || rxDrop > 0 || txDrop > 0;
+
+    return `
+      <div class="iface-card ${isUp ? 'up' : 'down'}">
+        <div class="iface-name">
+          ${iface.name}
+          <span class="iface-badge ${isUp ? 'up' : 'down'}">${isUp ? 'UP' : 'DN'}</span>
+        </div>
+        ${speed ? `<div class="iface-meta"><span>⛭ ${speed}</span></div>` : ''}
+        <div class="traffic-row rx">
+          <span class="traffic-dir">RX</span>
+          <div class="traffic-bar-wrap"><div class="traffic-bar" style="width:${rxPct.toFixed(1)}%"></div></div>
+          <span class="traffic-val">${fmtBits(rxBps)}</span>
+        </div>
+        <div class="traffic-row tx">
+          <span class="traffic-dir">TX</span>
+          <div class="traffic-bar-wrap"><div class="traffic-bar" style="width:${txPct.toFixed(1)}%"></div></div>
+          <span class="traffic-val">${fmtBits(txBps)}</span>
+        </div>
+        ${hasErrors ? `<div class="iface-errors"><span>✕ RX ${rxErr}</span><span>✕ TX ${txErr}</span><span>⬇ Drops ${rxDrop + txDrop}</span></div>` : ''}
+      </div>
+    `;
+  });
+
+  grid.innerHTML = cards.join('') || '<div class="empty-state">No interfaces found</div>';
+}
+
+// ── Connections table ────────────────────────────────────────────────────────
+function renderConnections(data) {
+  const tbody = document.getElementById('conn-tbody');
+  const countEl = document.getElementById('conn-count');
+  const conns = data.connections || [];
+  countEl.textContent = conns.length + (conns.length >= 100 ? '+' : '');
+
+  if (!conns.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No active connections</td></tr>';
+    return;
+  }
+
+  const rows = conns.map(c => {
+    const proto = (c.protocol || 'other').toLowerCase();
+    const state = (c.state || '').toLowerCase().replace(/\s+/g, '-');
+    const stateClass = state.includes('established') ? 'established'
+                     : state.includes('time-wait')   ? 'time-wait'
+                     : state.includes('syn')          ? 'syn-sent'
+                     : 'other';
+    const protoClass = proto === 'tcp' ? 'tcp'
+                     : proto === 'udp' ? 'udp'
+                     : proto === 'icmp' ? 'icmp' : 'other';
+    return `
+      <tr>
+        <td><span class="proto-badge proto-${protoClass}">${proto}</span></td>
+        <td>${c['src-address'] || '—'}</td>
+        <td>${c['dst-address'] || '—'}</td>
+        <td><span class="state-badge state-${stateClass}">${c.state || '—'}</span></td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+// ── BGP table ────────────────────────────────────────────────────────────────
+function renderBgp(sessions) {
+  const tbody = document.getElementById('bgp-tbody');
+  const countEl = document.getElementById('bgp-count');
+  countEl.textContent = sessions.length;
+
+  if (!sessions.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No BGP sessions configured</td></tr>';
+    return;
+  }
+
+  const rows = sessions.map(s => {
+    const state = (s['established'] === 'true' || s['established'] === true) ? 'established'
+                : (s['state'] || 'idle').toLowerCase();
+    const stateClass = state === 'established' ? 'bgp-established'
+                     : state === 'active'       ? 'bgp-active'
+                     : state === 'idle'         ? 'bgp-idle' : 'bgp-other';
+    const prefixes = s['prefix-count'] || s['established-prefix-count'] || '—';
+    const remoteAs  = s['remote.as'] || s['remote-as'] || '—';
+    const peerName  = s['name'] || s['remote.address'] || '—';
+    const stateLabel = s['state'] || (s['established'] === 'true' ? 'Established' : 'Idle');
+
+    return `
+      <tr>
+        <td>${peerName}</td>
+        <td>AS${remoteAs}</td>
+        <td class="${stateClass}">${stateLabel}</td>
+        <td>${prefixes}</td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+// ── PPTP table ───────────────────────────────────────────────────────────────
+function renderPptp(sessions) {
+  const tbody = document.getElementById('pptp-tbody');
+  const countEl = document.getElementById('pptp-count');
+  countEl.textContent = sessions.length;
+
+  if (!sessions.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No active PPTP sessions</td></tr>';
+    return;
+  }
+
+  const rows = sessions.map(s => `
+    <tr>
+      <td>${s.name || '—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px">${s['caller-id'] || '—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px">${s.address || '—'}</td>
+      <td>${formatUptime(s.uptime) || '—'}</td>
+    </tr>
+  `);
+  tbody.innerHTML = rows.join('');
+}
+
+// ── Main polling ─────────────────────────────────────────────────────────────
+let countdown = 5;
+let routerIp = '—';
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function setOnline(online) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (online ? ' online' : '');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 6000);
+}
+
+async function updateResource() {
+  try {
+    const d = await fetchJSON('/api/resource');
+    const cpuLoad = Number(d['cpu-load'] || 0);
+    const totalMem = Number(d['total-memory'] || 1);
+    const freeMem  = Number(d['free-memory'] || 0);
+    const usedMem  = totalMem - freeMem;
+    const ramPct   = pct(usedMem, totalMem);
+
+    // CPU
+    const cpuEl = document.getElementById('cpu-val');
+    cpuEl.textContent = cpuLoad + '%';
+    cpuEl.className = 'spark-value ' + colorClass(cpuLoad);
+    pushSparkline(cpuChart, cpuLoad);
+
+    // RAM
+    const ramEl = document.getElementById('ram-val');
+    ramEl.textContent = ramPct + '%';
+    ramEl.className = 'spark-value ' + colorClass(ramPct);
+    pushSparkline(ramChart, ramPct);
+
+    // Header
+    document.getElementById('hdr-version').textContent = d['version'] || '—';
+    document.getElementById('hdr-uptime').textContent  = formatUptime(d['uptime'] || '—');
+    document.getElementById('hdr-ip').textContent      = routerIp;
+    setOnline(true);
+  } catch (e) {
+    setOnline(false);
+    showError('Cannot reach router: ' + e.message);
+  }
+}
+
+async function updateHealth() {
+  try {
+    const h = await fetchJSON('/api/health');
+
+    // ── Temperatures ────────────────────────────────────────
+    function setTemp(idVal, idBar, val) {
+      const t = Number(val || 0);
+      const el = document.getElementById(idVal);
+      if (!el) return;
+      el.textContent = t ? t + '°C' : '—';
+      el.className = 'card-value ' + (t > 75 ? 'alert' : t > 60 ? 'warn' : '');
+      const bar = document.getElementById(idBar);
+      if (bar) {
+        const pct = Math.min(100, (t / 100) * 100);
+        bar.style.width = pct + '%';
+        bar.className = 'bar-fill ' + barClass(pct);
+      }
+    }
+
+    setTemp('temp-cpu',    'bar-cpu',    h.temps?.cpu?.value);
+    setTemp('temp-sfp',    'bar-sfp',    h.temps?.sfp?.value);
+    setTemp('temp-switch', 'bar-switch', h.temps?.switch?.value);
+    setTemp('temp-board',  'bar-board',  h.temps?.board?.value);
+
+    // ── Fans ────────────────────────────────────────────────
+    ['fan1','fan2','fan3','fan4'].forEach(f => {
+      const el = document.getElementById(f + '-val');
+      if (!el) return;
+      const rpm = Number(h.fans?.[f]?.value || 0);
+      el.textContent = rpm ? rpm.toLocaleString() : '—';
+      // Dim if fan stopped
+      el.className = 'card-value ' + (rpm === 0 ? 'alert' : 'blue');
+    });
+
+    // ── PSU states ──────────────────────────────────────────
+    function setPsu(idVal, idSub, state) {
+      const el = document.getElementById(idVal);
+      const sub = document.getElementById(idSub);
+      if (!el) return;
+      const ok = (state || '').toLowerCase() === 'ok';
+      el.textContent = ok ? 'OK' : (state || '—');
+      el.className = 'card-value ' + (ok ? '' : 'alert');
+      if (sub) sub.textContent = ok ? 'Power good' : '⚠ Check PSU';
+    }
+
+    setPsu('psu1-val', 'psu1-sub', h.psu?.psu1);
+    setPsu('psu2-val', 'psu2-sub', h.psu?.psu2);
+
+  } catch (e) {
+    console.warn('Health fetch failed:', e.message);
+  }
+}
+
+async function updateInterfaces() {
+  try {
+    const [ifaceData, trafficData] = await Promise.all([
+      fetchJSON('/api/interfaces'),
+      fetchJSON('/api/traffic'),
+    ]);
+    renderIfaceCards(ifaceData, trafficData);
+    renderBandwidth(trafficData);
+  } catch (e) {
+    document.getElementById('iface-grid').innerHTML =
+      '<div class="empty-state">Failed to load interfaces: ' + e.message + '</div>';
+  }
+}
+
+let connTick = 0;
+async function updateConnections() {
+  // Refresh connections less frequently (every 2 resource cycles)
+  if (++connTick % 2 !== 0) return;
+  try {
+    const data = await fetchJSON('/api/connections');
+    renderConnections(data);
+  } catch (e) {
+    document.getElementById('conn-tbody').innerHTML =
+      '<tr><td colspan="4" class="empty-state">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+let bgpTick = 0;
+async function updateBgp() {
+  // Refresh BGP every 3 cycles (~15s)
+  if (++bgpTick % 3 !== 0) return;
+  try {
+    const data = await fetchJSON('/api/bgp');
+    renderBgp(data);
+  } catch (e) {
+    document.getElementById('bgp-tbody').innerHTML =
+      '<tr><td colspan="4" class="empty-state">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+let pptpTick = 0;
+async function updatePptp() {
+  // Refresh PPTP every 2 cycles (~10s)
+  if (++pptpTick % 2 !== 0) return;
+  try {
+    const data = await fetchJSON('/api/pptp');
+    renderPptp(data);
+  } catch (e) {
+    document.getElementById('pptp-tbody').innerHTML =
+      '<tr><td colspan="4" class="empty-state">Error: ' + e.message + '</td></tr>';
+  }
+}
+
+async function tick() {
+  document.getElementById('last-update').textContent =
+    new Date().toLocaleTimeString([], { hour12: false });
+
+  await Promise.allSettled([
+    updateResource(),
+    updateHealth(),
+    updateInterfaces(),
+    updateConnections(),
+    updateBgp(),
+    updatePptp(),
+  ]);
+}
+
+// Countdown badge
+setInterval(() => {
+  countdown--;
+  if (countdown <= 0) countdown = 5;
+  document.getElementById('countdown').textContent = '⟳ ' + countdown + 's';
+}, 1000);
+
+// Init
+(async () => {
+  try {
+    const cfg = await fetchJSON('/api/config');
+    routerIp = cfg.routerIp;
+    document.getElementById('hdr-ip').textContent = routerIp;
+  } catch (e) {}
+
+  // Force BGP + connections + PPTP to load on first tick
+  connTick = 1;
+  bgpTick  = 2;
+  pptpTick = 1;
+
+  await tick();
+  setInterval(tick, 5000);
+})();
+</script>
+</body>
+</html>

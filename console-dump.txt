@@ -1,0 +1,44 @@
+# 2026-05-03 19:41:31 by RouterOS 7.19.4
+# software id = STUK-J37R
+#
+Flags: D - DYNAMIC; X - DISABLED; R - RUNNING; S - SLAVE
+Columns: NAME, TYPE, ACTUAL-MTU, L2MTU, MAX-L2MTU, MAC-ADDRESS
+     NAME                      TYPE        ACTUAL-MTU  L2MTU  MAX-L2MTU  MAC-ADDRESS      
+     ether1                    ether             1500   1584       9570  04:F4:1C:15:46:7D
+;;; RADIO_LINK
+  R  ether2                    ether             1500   1584       9570  04:F4:1C:15:46:7E
+     ether3                    ether             1500   1584       9570  04:F4:1C:15:46:7F
+  RS ether4                    ether             1500   1584       9570  04:F4:1C:15:46:80
+   S ether5                    ether             1500   1584       9570  04:F4:1C:15:46:81
+;;; ERP_LAN2
+  RS ether6                    ether             1500   1584       9570  04:F4:1C:15:46:82
+;;; NEW_ERP_REALIP
+  RS ether7                    ether             1500   1584       9570  04:F4:1C:15:46:83
+     ether8                    ether             1500   1584       9570  04:F4:1C:15:46:84
+   S ether9                    ether             1500   1584       9570  04:F4:1C:15:46:85
+     ether10                   ether             1500   1584       9570  04:F4:1C:15:46:86
+     ether11                   ether             1500   1584       9570  04:F4:1C:15:46:87
+     ether12                   ether             1500   1584       9570  04:F4:1C:15:46:88
+     ether13                   ether             1500   1600       9586  04:F4:1C:15:46:89
+;;; SDT Primary SCL
+  R  sfp-sfpplus1-SCL          ether             1500   1584       9570  04:F4:1C:15:46:79
+;;; SDT Secondary F@H
+  R  sfp-sfpplus2-FHL          ether             1500   1584       9570  04:F4:1C:15:46:7A
+   S sfp-sfpplus3              ether             1500   1584       9570  04:F4:1C:15:46:7B
+;;; LAN_UP1_DAC10G
+  RS sfp-sfpplus4              ether             1500   1584       9570  04:F4:1C:15:46:7C
+D R  <pptp-logic-2>            pptp-in           1400                                     
+     AIP_VPN                   pptp-in                                                    
+ X   API-TO-HQ                 gre-tunnel        1476  65535                              
+  R  Factory To BGMEA          eoip              1458  65535             02:4F:50:73:E9:79
+  R  GRE To BGMEA              gre-tunnel        1500  65535                              
+  R  IPCAM                     vlan              1500   1580             04:F4:1C:15:46:80
+  R  LAN_BR                    bridge            1500   1584             04:F4:1C:15:46:80
+  R  MOBILE_NET                vlan              1500   1580             04:F4:1C:15:46:80
+  R  WAN_BR                    bridge            1500   1584             04:F4:1C:15:46:83
+  R  WIFI                      vlan              1500   1580             04:F4:1C:15:46:80
+  R  lo                        loopback         65536                    00:00:00:00:00:00
+  R  v3054-SDT_Seccondary_F@H  vlan              1500   1580             04:F4:1C:15:46:7A
+  R  v3411-SDT_Primary_SCL     vlan              1500   1580             04:F4:1C:15:46:79
+;;; WireGuard VPN
+  R  wireguard1                wg                1420                                     
