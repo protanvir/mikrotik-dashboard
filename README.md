@@ -155,9 +155,9 @@ sudo systemctl start mikrotik-dashboard
 
 ## Mikrotik Security
 | Give access to MikroTik www port 80 service to only one or few local IP (replace 192.168.2.10 with your IP where the server will be running )
-  /ip firewall filter add chain=input protocol=tcp dst-port=80 src-address=192.168.2.10 action=accept 
+|  /ip firewall filter add chain=input protocol=tcp dst-port=80 src-address=192.168.2.10 action=accept 
 | Block all other ip from accessing the port
-  /ip firewall filter add chain=input protocol=tcp dst-port=80 src-address=0.0.0.0/0 action=drop
+|  /ip firewall filter add chain=input protocol=tcp dst-port=80 src-address=0.0.0.0/0 action=drop
 
 ## Troubleshooting
 
